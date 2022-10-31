@@ -1,0 +1,146 @@
+{% extends 'base.html' %} {% comment %} <!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Chat Room</title>
+  </head>
+  <body>
+    <textarea id="chat-log" cols="100" rows="20"></textarea><br />
+    <input id="chat-message-input" type="text" size="100" /><br />
+    <input id="chat-message-submit" type="button" value="Send" />
+    {{ room_name|json_script:"room-name" }}
+    <script>
+      const roomName = JSON.parse(
+        document.getElementById("room-name").textContent
+      );
+
+      const chatSocket = new WebSocket(
+        "ws://" + window.location.host + "/ws/chat/" + roomName + "/"
+      );
+
+      chatSocket.onmessage = function (e) {
+        const data = JSON.parse(e.data);
+        document.querySelector("#chat-log").value += data.message + "\n";
+      };
+
+      chatSocket.onclose = function (e) {
+        console.error("Chat socket closed unexpectedly");
+      };
+
+      document.querySelector("#chat-message-input").focus();
+      document.querySelector("#chat-message-input").onkeyup = function (e) {
+        if (e.keyCode === 13) {
+          // enter, return
+          document.querySelector("#chat-message-submit").click();
+        }
+      };
+
+      document.querySelector("#chat-message-submit").onclick = function (e) {
+        const messageInputDom = document.querySelector("#chat-message-input");
+        const message = messageInputDom.value;
+        chatSocket.send(
+          JSON.stringify({
+            message: message,
+          })
+        );
+        messageInputDom.value = "";
+      };
+    </script>
+  </body>
+</html>
+{% endcomment %} {% block title %} Room {% endblock title %} {%block alertMessage%} {%if messages %} {% for message in messages %}
+<p class="alert alert-success">{{message}}</p>
+{% endfor %} {%endif %} {% endblock alertMessage %} {% block style %} .popup{
+width:400px; background:#fff; border-radius:6px; position:absolute; top:0;
+left:50%; transform:translate(-50%,-50%) scale(0.1); text-align:center;
+padding:0 30px 30px; color:#333; visibility:hidden; transition:transform
+0.4s,top0.4s; } 
+
+{% endblock style %} {%block content%}
+<div class="container">
+    <div class="flex items-center justify-between px-4">
+        <div class="p-10 lg:p-5 text-center">
+          <strong class="text-xl text-white" onclick="createroomFunc()">Rooms</strong>
+        </div>
+        <div class="flex space-x-4 px-5">
+          <div class="popup" id="popup">
+            <div class="pt-5" >
+              <strong style="color: teal" >Create new room</strong>
+            </div>
+            <div class="lg:w-2/4 mt-6 mx-4 lg:mx-auto p-4 bg-white rounded-xl">
+              <form action="{% url 'CreateRooms' %}" method="POST">
+                {% csrf_token %} 
+                
+                 <div class="pb-2">
+                  <input
+                  type="text"
+                  class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-teal-600 focus:outline-none"
+                  id="id_name"
+                  name="name"
+                  placeholder="Room Name"
+                />
+                </div>
+                
+                <div class="pb-4">
+                  <input
+                  type="text"
+                  class="form-control block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-teal-600 focus:outline-none"
+                  id="id_slug"
+                  name="slug"
+                  placeholder="Room Code"
+                />
+                </div>  
+          <div class="flex items-center justify-between">
+            <button class="btn px-2 py-2 rounded-xl text-white bg-indigo-700 hover:bg-indigo-600">Create</button>
+            <div class="px-2"></div>
+            <button class="btn px-2 py-2 rounded-xl border:bg-indigo-700 hover:bg-indigo-600 bg-clip-padding border border-solid" id="cancelbutton" >Cancel</button>
+        
+          </div>
+              </form> 
+              
+            </div>
+          </div>
+          <button
+            href=""
+            class="px-5 py-3 rounded-xl text-white bg-indigo-700 hover:bg-indigo-800 btn"
+            id="createroom"
+          >
+            <strong>Create new room</strong>
+          </button>
+        </div>
+      </div>
+      
+      <div class="w-full flex flex-wrap items-center">
+        {% for room in rooms %}
+      
+        <div class="w-full lg:w-1/4 px-3 py-3">
+          <div class="p-4 bg-white shadow rounded-xl text-center">
+            <h2 class="mb-5 text-2xl font-semibold">{{room.name}}</h2>
+            <a
+              href="{% url 'find_room'  room.slug %}"
+              class="px-5 py-3 block rounded-xl text-white bg-indigo-600 hover:bg-indigo-700"
+              >Join</a
+            >
+          </div>
+        </div>
+        {% endfor %}
+        
+      </div>
+</div>
+{% endblock content %} {% block scripts %}
+
+<script>
+ 
+  document.getElementById("createroom").addEventListener("click",function(){
+    document.querySelector(".popup").style.visibility="visible";
+    document.querySelector(".popup").style.top="50%";
+    document.querySelector(".popup").style.transform="translate(-50%,-50%) scale(1.0)";
+  })
+  document.getElementById("cancelbutton").addEventListener("click",function(){
+    document.querySelector(".popup").style.visibility="hidden";
+    document.querySelector(".popup").style.top="0";
+    document.querySelector(".popup").style.transform="translate(-50%,-50%) scale(0.1)";
+  })
+ 
+</script>
+{% endblock scripts %}

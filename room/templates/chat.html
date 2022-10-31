@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}
+{{room_object.name}}
+{% endblock title %}
+{% block alertMessage %}
+{%if messages %} {% for message in messages %}
+<p class="alert alert-success">{{message}}</p>
+{% endfor %} 
+{%endif %}
+{% endblock alertMessage %}
+{% block content %}
+<div class="p-10 lg:p-5 text-center">
+    <h1 class="text-3xl lg:text-6xl text-white">{{room_object.name}}</h1>
+</div>
+
+
+<div class="lg:w-2/4 mx-4 lg:mx-auto p-4 bg-white rounded-xl">
+    <div class="chat-messages space-y-3" id="chat-messages"> 
+        {% for mg in msg %}
+        <div class="p-4 bg-gray-200 rounded-xl"> 
+            <p class="font-semibold">{{mg.user.username}}</p>
+            <p>{{mg.content}}</p>
+        </div>
+        {% endfor %}   
+    </div>
+</div>
+<div class="lg:w-2/4 mt-6 mx-4 lg:mx-auto p-4 bg-white rounded-xl">
+    <form action="." method='POST' class="flex">
+        {% csrf_token %}
+        {% comment %} <input type="text" name="content" class="placeholder:text-blue-300 flex-1 mr-3" placeorder="Type message here..." id="chat-message-input" > {% endcomment %}
+        <input type="text" name="content" class="placeholder:text-bg-indigo-600 flex-1 mr-3"   placeholder="Type message here..." id="chat-message-input" />
+        <button class="px-5 py-3 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700" id="chat-message-submit">Submit</button>
+    </form>
+</div>
+{% endblock content %} 
+
+{% block scripts %}
+{{room_object.slug|json_script:"json-roomname"}}
+{{request.user.username|json_script:"json-username"}}
+<script>
+    const roomName = JSON.parse(document.getElementById('json-roomname').textContent);
+    const userName=JSON.parse(document.getElementById('json-username').textContent);
+
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/'
+        + roomName
+        + '/'
+    );
+chatSocket.onmessage=function(e){
+    const data=JSON.parse(e.data)
+    if(data.message)
+    {
+        console.log("CHAT SOCKET")
+        console.log(data.message)
+        let html='<div class="p-4 bg-gray-200 rounded-xl">'
+            html+='<p class="font-semibold">'+data.username+'</p>'
+            html+='<p>'+data.message+'</p></div>'
+
+            document.querySelector('#chat-messages').innerHTML+=html
+            scrollToBottom()
+    }
+    else
+    {
+        alert('message is empty!!!')
+    }
+    console.log("ON-message")
+}
+chatSocket.onclose=function(e){
+    console.log("ON-close")
+}
+
+document.querySelector('#chat-message-submit').onclick=function(e){
+    e.preventDefault()
+    const messageInputDom=document.querySelector('#chat-message-input')
+    console.log("SUBMIT*******")
+    console.log(messageInputDom.value)
+    const message=messageInputDom.value;
+    chatSocket.send(JSON.stringify({
+        'message':message,
+        'username':userName,
+        'room':roomName
+    }))
+    messageInputDom.value='';
+    return false;
+}
+
+function scrollToBottom(){
+    const objDiv=document.querySelector("#chat-messages")
+    objDiv.scrollTop=objDiv.scrollHeight;
+}
+
+scrollToBottom();
+</script>
+{% endblock scripts %}
