@@ -145,3 +145,4 @@ DATABASES['default'].update(db_from_env)
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+CSRF_TRUSTED_ORIGINS = ['https://chat-app-dj.herokuapp.com']
