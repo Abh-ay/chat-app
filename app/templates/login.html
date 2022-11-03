@@ -25,6 +25,20 @@
 <div class="text-center"><button class=" px-5 py-3 rounded-xl text-white bg-indigo-800 hover:bg-indigo-700">Login</button></div>
 
   </form>
-
-
 {% endblock content %}
+
+{% block loginSignupButton %}
+<a href="/" class="px-5 py-3 rounded-xl text-white hover:bg-indigo-700">Login</a>
+<a href="/signup/" class="px-5 py-3 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700">Sign up</a>
+{% endblock loginSignupButton %}
+{% block alertMessage %}
+{% if messages %}
+
+{% for message in messages %}
+
+<p  class="alert alert-warning rounded-xl text-center bg-white py-5 pt-2 mx-24 my-2">{{message}}</p>
+{% endfor %}
+{% endif %}
+
+{% endblock alertMessage %}
+

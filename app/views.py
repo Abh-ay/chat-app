@@ -27,7 +27,11 @@ def loginView(request):
             else:
                 return HttpResponseRedirect('/rooms/')
     else:
-        return render(request, 'login.html', {'form': LoginForm()})
+        if request.user.is_authenticated:
+            messages.success(request,"User is already Logged in")
+            return HttpResponseRedirect('/rooms/')
+        else:
+            return render(request, 'login.html', {'form': LoginForm()})
 
 
 
@@ -50,8 +54,12 @@ def signup(request):
         else:
             return render(request,'signup.html',{'form':form})
     else:
-        form=SignUpForm()
-        return render(request,'signup.html',{'form':form})
+        if request.user.is_authenticated:
+            messages.success(request,"User is already Logged in")
+            return HttpResponseRedirect('/rooms/')
+        else:
+            form=SignUpForm()
+            return render(request,'signup.html',{'form':form})
 
 
 def logoutView(request):

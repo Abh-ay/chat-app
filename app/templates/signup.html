@@ -3,6 +3,16 @@
 Sign up
 {% endblock title %}
 
+{% block alertMessage %}
+{% if messages %}
+{% for message in messages %}
+<p  class="alert alert-warning rounded-xl text-center bg-white py-5 pt-2 mx-24 my-2">{{message}}</p>
+{% endfor %}
+{% endif %}
+
+{% endblock alertMessage %}
+
+
 {% block content %}
 <div class="p-5 lg:p-10 text-center">
     <h1 class="text-3xl lg:text-6xl text-white">Sign up</h1>
@@ -33,3 +43,7 @@ Sign up
 
   </form>
 {% endblock content %} 
+{% block loginSignupButton %}
+<a href="/" class="px-5 py-3 rounded-xl text-white bg-indigo-600 hover:bg-indigo-700">Login</a>
+<a href="/signup/" class="px-5 py-3 rounded-xl text-white hover:bg-indigo-700">Sign up</a>
+{% endblock loginSignupButton %}

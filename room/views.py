@@ -6,11 +6,14 @@ from django.http import HttpResponseRedirect
 from django.contrib import messages
 
 
-@login_required
 def rooms(request):
-    fm=RoomForm()
-    rooms=Room.objects.all()
-    return render(request,'room.html',{'rooms':rooms,"form":fm})
+    if request.user.is_authenticated:
+        fm=RoomForm()
+        rooms=Room.objects.all()
+        return render(request,'room.html',{'rooms':rooms,"form":fm})
+    else:
+        return HttpResponseRedirect('/')
+
 
 
 @login_required
